@@ -60,19 +60,22 @@ END;
 
     private function editorScript($fieldname, $width, $height, $toolbar)
     {
-        global $website, $public_scheme, $systemroot;
+        global $website, $public_scheme, $systemroot, $pageroot;
 
         $file =  rtrim(getConfig('ckeditor_path'), '/') . '/ckeditor.js';
 
         if ($file[0] == '/') {
-            $file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $file;
+            $ckFile = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $file;
+            $ckPath = sprintf('%s://%s%s', $public_scheme, $website, $file);
         } else {
-            $file = $systemroot . '/' . $file;
+            $ckFile = $systemroot . '/' . $file;
+            $ckPath = sprintf('%s://%s%s/admin/%s', $public_scheme, $website, $pageroot, $file);
         }
-        if (!is_file($file) ) {
+
+        if (!is_file($ckFile)) {
             return sprintf(
                 '<div class="note error">CKEditor is not available because the ckeditor file "%s" does not exist. Check your setting for the path to ckeditor.</div>',
-                $file
+                $ckFile
             );
         }
 
@@ -136,7 +139,7 @@ END;
             }
         }
 
-        $path = htmlspecialchars(rtrim(getConfig('ckeditor_path'), '/'));
+        $ckPath = htmlspecialchars($ckPath);
         $ckConfigPath = rtrim(getConfig('ckeditor_config_path'), '/');
 
         if ($ckConfigPath) {
@@ -156,7 +159,7 @@ END;
         }
         $configSettings = implode(",\n", $settings);
         $html .= <<<END
-<script type="text/javascript" src="$path/ckeditor.js"></script>
+<script type="text/javascript" src="$ckPath"></script>
 <script><!--
 CKEDITOR.replace('$fieldname', {
 $configSettings
